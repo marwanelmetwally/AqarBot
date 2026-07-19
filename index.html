@@ -57,9 +57,9 @@
     .chat-head { display:flex; align-items:center; gap:10px; color:var(--navy); font-weight:800; border-bottom:1px solid #eee; padding-bottom:10px; }
     .bot-dot { width:34px; height:34px; display:grid; place-items:center; background:var(--navy); color:#fff; border-radius:50%; }
     .message { margin:16px 0 10px; background:#e4f4fa; border-radius:12px 12px 0 12px; padding:12px; font-size:.9rem; line-height:1.8; }
-    .sheet-preview { display:grid; grid-template-columns:1.1fr .9fr .8fr; gap:4px; background:#c6e1ea; border-radius:7px; overflow:hidden; font-size:.68rem; }
-    .sheet-preview span { background:#fff; padding:6px 4px; white-space:nowrap; overflow:hidden; }
-    .sheet-preview span:nth-child(-n+3) { background:#d7f0f7; font-weight:700; }
+    .sheet-preview { display:grid; grid-template-columns:1.15fr .85fr .8fr; gap:4px; background:#c6e1ea; border-radius:10px; overflow:hidden; color:var(--navy); font-size:.78rem; font-weight:800; line-height:1.45; }
+    .sheet-preview span { display:flex; align-items:center; justify-content:center; min-height:38px; background:#fff; padding:7px 5px; text-align:center; overflow-wrap:anywhere; }
+    .sheet-preview span:nth-child(-n+3) { background:#d7f0f7; color:#004365; font-size:.72rem; }
 
     .problem { position:relative; text-align:center; }
     .problem::before { content:""; position:absolute; top:42px; right:5%; width:72px; height:10px; border-top:3px solid var(--gold); border-bottom:3px solid var(--gold); transform:rotate(-10deg); }
@@ -123,15 +123,33 @@
     .social-links a { display:grid; place-items:center; width:42px; height:42px; border:1px solid #72afc6; border-radius:50%; transition:background .2s; }
     .social-links a:hover { background:var(--gold); border-color:var(--gold); }
     .copyright { color:#aebac4; font-size:.8rem; margin:0; }
-    .whatsapp-fab { position:fixed; z-index:30; left:16px; bottom:16px; display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:999px; background:#18a957; color:#fff; box-shadow:0 8px 20px rgba(0,43,84,.28); font-weight:800; transition:transform .2s; }
-    .whatsapp-fab:hover { transform:translateY(-3px); }
-    .whatsapp-fab .icon { width:21px; height:21px; }
+    .contact-fabs { position:fixed; z-index:30; left:16px; bottom:16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .contact-fab { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:9px 14px; border:0; border-radius:999px; color:#fff; box-shadow:0 8px 20px rgba(0,43,84,.28); font:inherit; font-weight:800; cursor:pointer; transition:transform .2s,opacity .2s; }
+    .contact-fab:hover { transform:translateY(-3px); }
+    .contact-fab .icon { width:21px; height:21px; }
+    .whatsapp-fab { background:#18a957; }
+    .chatbot-fab { background:var(--gold); }
+    .chatbot-fab.is-disabled { opacity:.72; pointer-events:none; }
+    .chat-widget-panel { position:fixed; z-index:31; left:16px; bottom:76px; width:min(370px,calc(100% - 32px)); max-height:min(620px,calc(100vh - 100px)); display:flex; flex-direction:column; overflow:hidden; background:#fff; border:1px solid var(--border); border-radius:16px; box-shadow:0 18px 55px rgba(0,43,84,.25); }
+    .chat-widget-panel[hidden] { display:none; }
+    .chat-widget-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 15px; background:var(--navy); color:#fff; }
+    .chat-widget-title { display:flex; align-items:center; gap:9px; text-align:right; font-weight:800; }
+    .chat-widget-title small { display:block; color:#bfe7ef; font-size:.72rem; font-weight:600; line-height:1.5; }
+    .chat-close { display:grid; place-items:center; width:34px; height:34px; border:1px solid rgba(255,255,255,.28); border-radius:50%; background:transparent; color:#fff; cursor:pointer; font-size:1.2rem; line-height:1; }
+    .chat-messages { flex:1; min-height:250px; max-height:430px; overflow:auto; padding:14px; background:#f6fbfd; }
+    .chat-message { width:fit-content; max-width:88%; margin-bottom:10px; padding:10px 12px; border-radius:13px; color:var(--ink); line-height:1.75; font-size:.92rem; box-shadow:0 4px 12px rgba(0,43,84,.06); white-space:pre-wrap; overflow-wrap:anywhere; }
+    .chat-message.bot { margin-left:auto; background:#fff; border-bottom-right-radius:4px; }
+    .chat-message.user { margin-right:auto; background:#dff5f8; border-bottom-left-radius:4px; color:var(--navy); }
+    .chat-form { display:flex; gap:8px; padding:12px; background:#fff; border-top:1px solid var(--border); }
+    .chat-form input { min-height:44px; border-radius:999px; }
+    .chat-send { display:grid; place-items:center; width:46px; height:46px; flex:0 0 auto; border:0; border-radius:50%; background:var(--gold); color:#fff; cursor:pointer; }
+    .chat-send:disabled { opacity:.55; cursor:not-allowed; }
     @keyframes float-card { 50% { transform:translateY(-8px); } }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
 
     @media (min-width:600px) { .section { padding:78px 0; } .features-grid { grid-template-columns:repeat(2,1fr); } .steps { grid-template-columns:repeat(3,1fr); } .form-grid { grid-template-columns:repeat(2,1fr); } .field-full { grid-column:1/-1; } .demo-card { padding:38px; } }
     @media (min-width:900px) { .hero { padding:88px 0; } .hero-grid { grid-template-columns:1.18fr .82fr; gap:58px; } .hero-copy { text-align:right; } .hero p { margin-right:0; } .hero-actions { justify-content:flex-start; } .features-grid { grid-template-columns:repeat(4,1fr); } .footer-inner { flex-direction:row; justify-content:space-between; text-align:right; } .steps .step:not(:last-child)::after { content:""; position:absolute; top:42px; left:-19px; width:20px; border-top:2px dashed var(--gold); } }
-    @media (max-width:380px) { .logo-placeholder img { width:39px; height:39px; } .header-inner .btn { padding:6px 10px; font-size:.78rem; } }
+    @media (max-width:380px) { .logo-placeholder img { width:39px; height:39px; } .header-inner .btn { padding:6px 10px; font-size:.78rem; } .sheet-preview { font-size:.72rem; } .sheet-preview span { min-height:36px; padding:6px 3px; } .contact-fab span { display:none; } .contact-fab { width:46px; justify-content:center; padding:9px; } .chat-widget-panel { bottom:72px; } }
   </style>
 </head>
 <body>
@@ -153,17 +171,87 @@
     <section class="section faq" aria-labelledby="faq-title"><div class="container"><div class="faq-heading"><span class="eyebrow">أسئلة شائعة</span><h2 id="faq-title">كل التفاصيل بوضوح</h2></div><div class="faq-list"><div class="faq-item"><button class="faq-question" type="button" aria-expanded="false">هل موظفيني هيحتاجوا تدريب؟<span aria-hidden="true">+</span></button><div class="faq-answer"><div><p>لأ، عقار بوت بيشتغل جوه تيليجرام نفسه، بنفس طريقة إرسال الرسائل المعتادة.</p></div></div></div><div class="faq-item"><button class="faq-question" type="button" aria-expanded="false">هل بيانات عملائي هتفضل سرية؟<span aria-hidden="true">+</span></button><div class="faq-answer"><div><p>أيوه، بياناتك بتتخزن في Google Sheets خاص بيك بس، ومفيش أي طرف تالت بيوصلها.</p></div></div></div><div class="faq-item"><button class="faq-question" type="button" aria-expanded="false">هل ده اشتراك شهري؟<span aria-hidden="true">+</span></button><div class="faq-answer"><div><p>لأ، رخصة استخدام لمرة واحدة بسعر 4000 جنيه فقط، من غير أي تكلفة متكررة.</p></div></div></div></div></div></section>
     <section class="demo" id="demo-form" aria-labelledby="demo-title"><div class="container"><div class="demo-card"><div id="form-content"><header><span class="eyebrow">ديمو حي في ٥ دقايق</span><h2 id="demo-title">جرّب عقار بوت مجانًا</h2><p>ابعتلنا بياناتك وهنكلمك لحجز ديمو حي مدته 5 دقايق</p></header><form id="demo-booking-form" novalidate><input type="hidden" name="utm_source"><input type="hidden" name="utm_medium"><input type="hidden" name="utm_campaign"><div class="form-grid"><div class="field"><label for="name">الاسم</label><input id="name" name="name" type="text" autocomplete="name" required><span class="error" id="name-error"></span></div><div class="field"><label for="office">اسم المكتب</label><input id="office" name="office" type="text" required><span class="error" id="office-error"></span></div><div class="field"><label for="phone">رقم الموبايل</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="01XXXXXXXXX" required><span class="error" id="phone-error"></span></div><div class="field"><label for="employees">عدد الموظفين</label><select id="employees" name="employees" required><option value="" selected disabled>اختر العدد</option><option>1-2</option><option>3-7</option><option>8-15</option><option>15+</option></select><span class="error" id="employees-error"></span></div></div><button class="btn btn-primary form-submit" type="submit">احجز الديمو</button><p class="form-note">بياناتك تستخدم للتواصل معك بخصوص الديمو فقط.</p></form></div><div class="form-success" id="form-success" role="status">تم استلام طلبك، هنتواصل معاك خلال 24 ساعة</div></div></div></section>
   </main>
-  <footer class="site-footer"><div class="container footer-inner"><div><a class="logo-placeholder" href="#top"><img src="assets/aqar-bot-icon.png" alt="شعار عقار بوت"><span>عقار بوت</span></a><p class="footer-tagline">المساعد الذكي لمكاتب العقارات</p></div><div class="social-links"><a href="https://wa.me/201039805216" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب"><svg class="icon"><use href="#icon-whatsapp"/></svg></a><a href="https://t.me/XXXXXXXXXX" target="_blank" rel="noopener" aria-label="تواصل عبر تيليجرام"><svg class="icon"><use href="#icon-telegram"/></svg></a></div><div><a class="footer-tagline" href="https://wa.me/201039805216" target="_blank" rel="noopener">واتساب: +20 103 980 5216</a><p class="copyright">© 2026 عقار بوت</p></div></div></footer>
-  <a class="whatsapp-fab" href="https://wa.me/201039805216" target="_blank" rel="noopener" aria-label="تواصل معنا مباشرة على واتساب"><svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"/></svg><span>واتساب</span></a>
+  <footer class="site-footer"><div class="container footer-inner"><div><a class="logo-placeholder" href="#top"><img src="assets/aqar-bot-icon.png" alt="شعار عقار بوت"><span>عقار بوت</span></a><p class="footer-tagline">المساعد الذكي لمكاتب العقارات</p></div><div class="social-links"><a href="https://wa.me/201039805216" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب"><svg class="icon"><use href="#icon-whatsapp"/></svg></a><a href="https://t.me/201039805216" target="_blank" rel="noopener" aria-label="تواصل عبر تيليجرام"><svg class="icon"><use href="#icon-telegram"/></svg></a></div><div><a class="footer-tagline" href="https://wa.me/201039805216" target="_blank" rel="noopener">واتساب: +20 103 980 5216</a><br><a class="footer-tagline" href="https://t.me/201039805216" target="_blank" rel="noopener">تيليجرام: +20 103 980 5216</a><p class="copyright">© 2026 عقار بوت</p></div></div></footer>
+  <section class="chat-widget-panel" id="chat-widget" hidden aria-labelledby="chat-widget-title">
+    <header class="chat-widget-header">
+      <div class="chat-widget-title"><svg class="icon" aria-hidden="true"><use href="#icon-spark"/></svg><div><span id="chat-widget-title">شات عقار بوت</span><small>اسأل عن الديمو، السعر، وطريقة التشغيل</small></div></div>
+      <button class="chat-close" type="button" id="chat-close" aria-label="إغلاق الشات">×</button>
+    </header>
+    <div class="chat-messages" id="chat-messages" aria-live="polite">
+      <p class="chat-message bot">أهلًا بيك، اسألني أي سؤال عن عقار بوت وهنرد عليك فورًا.</p>
+    </div>
+    <form class="chat-form" id="chat-form">
+      <input id="chat-input" type="text" autocomplete="off" placeholder="اكتب سؤالك هنا..." aria-label="اكتب سؤالك للشات بوت" required>
+      <button class="chat-send" type="submit" aria-label="إرسال السؤال"><svg class="icon" aria-hidden="true"><use href="#icon-telegram"/></svg></button>
+    </form>
+  </section>
+  <div class="contact-fabs" aria-label="روابط تواصل سريعة">
+    <a class="contact-fab whatsapp-fab" href="https://wa.me/201039805216" target="_blank" rel="noopener" aria-label="تواصل معنا مباشرة على واتساب"><svg class="icon" aria-hidden="true"><use href="#icon-whatsapp"/></svg><span>واتساب</span></a>
+    <button class="contact-fab chatbot-fab" id="chat-toggle" type="button" aria-controls="chat-widget" aria-expanded="false" aria-label="افتح شات عقار بوت"><svg class="icon" aria-hidden="true"><use href="#icon-spark"/></svg><span>الشات بوت</span></button>
+  </div>
   <svg width="0" height="0" aria-hidden="true" style="position:absolute"><symbol id="icon-whatsapp" viewBox="0 0 24 24"><path d="M20 11.6a8 8 0 0 1-11.8 7L4 20l1.5-4A8 8 0 1 1 20 11.6Z"/><path d="M9 8.5c.2-.5.4-.5.7-.5h.5c.2 0 .4.1.5.4l.7 1.6c.1.3.1.5-.1.7l-.5.6c.5 1 1.3 1.8 2.4 2.3l.6-.5c.2-.2.4-.2.7-.1l1.6.7c.3.1.4.3.4.5v.5c0 .3-.1.5-.5.7-.5.2-1.3.3-2.3-.1-1-.4-2.4-1.2-3.5-2.5-1.1-1.3-1.7-2.5-1.8-3.5-.1-1 .2-1.8.4-2.2Z"/></symbol><symbol id="icon-telegram" viewBox="0 0 24 24"><path d="m21 4-3 16-6-5-3 3 .5-4.5L17 7 7 12l-4-1.5L21 4Z"/></symbol><symbol id="icon-alert" viewBox="0 0 24 24"><path d="M12 3 2.8 20h18.4L12 3Z"/><path d="M12 9v4M12 17h.01"/></symbol><symbol id="icon-spark" viewBox="0 0 24 24"><path d="m12 3 1.4 5.6L19 10l-5.6 1.4L12 17l-1.4-5.6L5 10l5.6-1.4L12 3ZM19 16l.6 2.4L22 19l-2.4.6L19 22l-.6-2.4L16 19l2.4-.6L19 16Z"/></symbol><symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol><symbol id="icon-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></symbol></svg>
   <script>
     // ضع رابط Webhook الخاص بـ Google Sheets هنا. اتركه فارغًا أثناء التجربة المحلية.
     const FORM_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyKN7EL7HYGaXXA2B7vJXS907foNG7OCw_UtYZxzwwkSnPsXy4Ni733dNplC9hgUoeu/exec';
+    const N8N_CHATBOT_URL = 'https://n8n.eassytech.tech/webhook/a1859f26-abf6-424e-a9b9-bff793b0b2b4/chat';
     const form = document.getElementById('demo-booking-form');
+    const chatWidget = document.getElementById('chat-widget');
+    const chatToggle = document.getElementById('chat-toggle');
+    const chatClose = document.getElementById('chat-close');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const savedChatSessionId = localStorage.getItem('aqar_chat_session');
+    const chatSessionId = savedChatSessionId || (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : 'aqar-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+    localStorage.setItem('aqar_chat_session', chatSessionId);
     const utmParams = ['utm_source', 'utm_medium', 'utm_campaign'];
     const query = new URLSearchParams(window.location.search);
     utmParams.forEach((key) => { form.elements[key].value = query.get(key) || ''; });
     document.querySelectorAll('.faq-question').forEach((button) => button.addEventListener('click', () => button.setAttribute('aria-expanded', button.getAttribute('aria-expanded') !== 'true')));
+    function setChatOpen(isOpen) {
+      chatWidget.hidden = !isOpen;
+      chatToggle.setAttribute('aria-expanded', String(isOpen));
+      if (isOpen) setTimeout(() => chatInput.focus(), 50);
+    }
+    function appendChatMessage(text, type = 'bot') {
+      const bubble = document.createElement('p');
+      bubble.className = 'chat-message ' + type;
+      bubble.textContent = text;
+      chatMessages.appendChild(bubble);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return bubble;
+    }
+    function extractChatReply(result) {
+      if (typeof result === 'string') return result;
+      if (Array.isArray(result)) return extractChatReply(result[0] || {});
+      return result.output || result.response || result.text || result.message || result.answer || 'وصلت رسالتك، وهنتواصل معاك بالرد المناسب.';
+    }
+    chatToggle.addEventListener('click', () => setChatOpen(chatWidget.hidden));
+    chatClose.addEventListener('click', () => setChatOpen(false));
+    chatForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const question = chatInput.value.trim();
+      if (!question) return;
+      appendChatMessage(question, 'user');
+      chatInput.value = '';
+      const typing = appendChatMessage('جاري الرد...', 'bot');
+      const sendButton = chatForm.querySelector('button');
+      sendButton.disabled = true;
+      try {
+        const response = await fetch(N8N_CHATBOT_URL, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ action:'sendMessage', sessionId:chatSessionId, chatInput:question, message:question })
+        });
+        const result = await response.json().catch(() => response.text());
+        typing.textContent = extractChatReply(result);
+      } catch (error) {
+        typing.textContent = 'حاليًا مش قادر أوصل للشات. جرّب واتساب أو احجز الديمو وهنرد عليك بسرعة.';
+      } finally {
+        sendButton.disabled = false;
+        chatInput.focus();
+      }
+    });
     function setError(field, message) { document.getElementById(field.id + '-error').textContent = message; }
     function clearErrors() { form.querySelectorAll('.error').forEach((item) => item.textContent = ''); }
     function isEgyptianPhone(value) { const digits = value.replace(/[\s()-]/g, ''); return /^(?:\+20|0020|0)1[0125]\d{8}$/.test(digits); }
