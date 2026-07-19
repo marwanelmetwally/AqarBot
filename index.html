@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="عقار بوت يحول رسائل تيليجرام إلى قاعدة بيانات عقارية منظمة في Google Sheets.">
   <meta name="theme-color" content="#0E4C67">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://n8n.eassytech.tech; form-action 'self'; upgrade-insecure-requests">
   <title>عقار بوت | المساعد الذكي لمكاتب العقارات</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -269,6 +271,10 @@
     // ضع رابط Webhook الخاص بـ Google Sheets هنا. اتركه فارغًا أثناء التجربة المحلية.
     const FORM_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyKN7EL7HYGaXXA2B7vJXS907foNG7OCw_UtYZxzwwkSnPsXy4Ni733dNplC9hgUoeu/exec';
     const N8N_CHATBOT_URL = 'https://n8n.eassytech.tech/webhook/a1859f26-abf6-424e-a9b9-bff793b0b2b4/chat';
+    const MAX_CHAT_MESSAGE_LENGTH = 400;
+    const MAX_FORM_TEXT_LENGTH = 80;
+    const MAX_PHONE_LENGTH = 16;
+    const MAX_UTM_LENGTH = 120;
     const form = document.getElementById('demo-booking-form');
     const chatWidget = document.getElementById('chat-widget');
     const chatToggle = document.getElementById('chat-toggle');
@@ -276,12 +282,81 @@
     const chatForm = document.getElementById('chat-form');
     const chatInput = document.getElementById('chat-input');
     const chatMessages = document.getElementById('chat-messages');
-    const savedChatSessionId = localStorage.getItem('aqar_chat_session');
+    function sanitizeText(value, maxLength = 400) {
+      return String(value || '')
+        .normalize('NFKC')
+        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/[<>{}\[\]`\\'";$]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, maxLength);
+    }
+    function sanitizePhone(value) {
+      return String(value || '').replace(/[^\d+]/g, '').slice(0, MAX_PHONE_LENGTH);
+    }
+    function hasSuspiciousContactText(value) {
+      return /(https?:\/\/|www\.|@|\.com|\.net|\.org|script|select|insert|update|delete|drop|--|\/\*)/i.test(value);
+    }
+    function hasMinimumLetters(value, minLetters = 2) {
+      const letters = value.match(/[\p{Script=Arabic}A-Za-z]/gu) || [];
+      return letters.length >= minLetters;
+    }
+    function isValidPersonName(value) {
+      return value.length >= 2 &&
+        value.length <= MAX_FORM_TEXT_LENGTH &&
+        !hasSuspiciousContactText(value) &&
+        !/[\d\u0660-\u0669]/.test(value) &&
+        hasMinimumLetters(value, 2) &&
+        /^[\p{Script=Arabic}A-Za-z\s.\-]+$/u.test(value);
+    }
+    function isValidOfficeName(value) {
+      return value.length >= 2 &&
+        value.length <= MAX_FORM_TEXT_LENGTH &&
+        !hasSuspiciousContactText(value) &&
+        hasMinimumLetters(value, 2) &&
+        !/^[\d\u0660-\u0669\s.\-]+$/.test(value) &&
+        /^[\p{Script=Arabic}A-Za-z\d\u0660-\u0669\s.\-()،&]+$/u.test(value);
+    }
+    function safeStorageGet(key) {
+      try { return localStorage.getItem(key); } catch (error) { return ''; }
+    }
+    function safeStorageSet(key, value) {
+      try { localStorage.setItem(key, value); } catch (error) { /* Storage can be blocked in private mode. */ }
+    }
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, {
+          credentials: 'omit',
+          referrerPolicy: 'strict-origin-when-cross-origin',
+          ...options,
+          signal: controller.signal
+        });
+      } finally {
+        window.clearTimeout(timer);
+      }
+    }
+    document.querySelectorAll('a[target="_blank"]').forEach((link) => {
+      link.rel = 'noopener noreferrer';
+      link.referrerPolicy = 'strict-origin-when-cross-origin';
+    });
+    chatInput.maxLength = MAX_CHAT_MESSAGE_LENGTH;
+    form.elements.name.maxLength = MAX_FORM_TEXT_LENGTH;
+    form.elements.office.maxLength = MAX_FORM_TEXT_LENGTH;
+    form.elements.phone.maxLength = MAX_PHONE_LENGTH;
+    form.elements.name.pattern = '[\\u0600-\\u06FFA-Za-z\\s.\\-]{2,80}';
+    form.elements.name.title = 'اكتب اسم شخص مناسب بدون أرقام أو رموز.';
+    form.elements.office.pattern = '[\\u0600-\\u06FFA-Za-z0-9\\u0660-\\u0669\\s.\\-()،&]{2,80}';
+    form.elements.office.title = 'اكتب اسم مكتب مناسب بدون روابط أو رموز غريبة.';
+    form.elements.phone.pattern = '^(?:\\+20|0020|0)1[0125][0-9]{8}$';
+    const savedChatSessionId = safeStorageGet('aqar_chat_session');
     const chatSessionId = savedChatSessionId || (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : 'aqar-' + Date.now() + '-' + Math.random().toString(16).slice(2));
-    localStorage.setItem('aqar_chat_session', chatSessionId);
+    safeStorageSet('aqar_chat_session', chatSessionId);
     const utmParams = ['utm_source', 'utm_medium', 'utm_campaign'];
     const query = new URLSearchParams(window.location.search);
-    utmParams.forEach((key) => { form.elements[key].value = query.get(key) || ''; });
+    utmParams.forEach((key) => { form.elements[key].value = sanitizeText(query.get(key), MAX_UTM_LENGTH); });
     document.querySelectorAll('.faq-question').forEach((button) => button.addEventListener('click', () => button.setAttribute('aria-expanded', button.getAttribute('aria-expanded') !== 'true')));
     function setChatOpen(isOpen) {
       chatWidget.hidden = !isOpen;
@@ -305,7 +380,7 @@
     chatClose.addEventListener('click', () => setChatOpen(false));
     chatForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const question = chatInput.value.trim();
+      const question = sanitizeText(chatInput.value, MAX_CHAT_MESSAGE_LENGTH);
       if (!question) return;
       appendChatMessage(question, 'user');
       chatInput.value = '';
@@ -313,13 +388,13 @@
       const sendButton = chatForm.querySelector('button');
       sendButton.disabled = true;
       try {
-        const response = await fetch(N8N_CHATBOT_URL, {
+        const response = await fetchWithTimeout(N8N_CHATBOT_URL, {
           method:'POST',
-          headers:{'Content-Type':'application/json'},
+          headers:{'Content-Type':'application/json', 'Accept':'application/json'},
           body:JSON.stringify({ action:'sendMessage', sessionId:chatSessionId, chatInput:question, message:question })
         });
         const result = await response.json().catch(() => response.text());
-        typing.textContent = extractChatReply(result);
+        typing.textContent = sanitizeText(extractChatReply(result), 1200);
       } catch (error) {
         typing.textContent = 'حاليًا مش قادر أوصل للشات. جرّب واتساب أو احجز الديمو وهنرد عليك بسرعة.';
       } finally {
@@ -333,16 +408,29 @@
     form.addEventListener('submit', async (event) => {
       event.preventDefault(); clearErrors();
       const name = form.elements.name, office = form.elements.office, phone = form.elements.phone, employees = form.elements.employees;
+      const cleanName = sanitizeText(name.value, MAX_FORM_TEXT_LENGTH);
+      const cleanOffice = sanitizeText(office.value, MAX_FORM_TEXT_LENGTH);
+      const cleanPhone = sanitizePhone(phone.value);
+      const cleanEmployees = ['1-2', '3-7', '8-15', '15+'].includes(employees.value) ? employees.value : '';
       let valid = true;
-      if (!name.value.trim()) { setError(name, 'من فضلك اكتب الاسم.'); valid = false; }
-      if (!office.value.trim()) { setError(office, 'من فضلك اكتب اسم المكتب.'); valid = false; }
-      if (!isEgyptianPhone(phone.value)) { setError(phone, 'من فضلك اكتب رقم موبايل مصري صحيح.'); valid = false; }
-      if (!employees.value) { setError(employees, 'من فضلك اختر عدد الموظفين.'); valid = false; }
+      if (!isValidPersonName(cleanName)) { setError(name, 'من فضلك اكتب اسم حقيقي بدون أرقام أو رموز.'); valid = false; }
+      if (!isValidOfficeName(cleanOffice)) { setError(office, 'من فضلك اكتب اسم مكتب مناسب بدون روابط أو رموز غريبة.'); valid = false; }
+      if (!isEgyptianPhone(cleanPhone)) { setError(phone, 'من فضلك اكتب رقم موبايل مصري صحيح.'); valid = false; }
+      if (!cleanEmployees) { setError(employees, 'من فضلك اختر عدد الموظفين.'); valid = false; }
       if (!valid) return;
-      const data = Object.fromEntries(new FormData(form).entries()); data.submitted_at = new Date().toISOString();
+      const data = {
+        name: cleanName,
+        office: cleanOffice,
+        phone: cleanPhone,
+        employees: cleanEmployees,
+        utm_source: sanitizeText(form.elements.utm_source.value, MAX_UTM_LENGTH),
+        utm_medium: sanitizeText(form.elements.utm_medium.value, MAX_UTM_LENGTH),
+        utm_campaign: sanitizeText(form.elements.utm_campaign.value, MAX_UTM_LENGTH),
+        submitted_at: new Date().toISOString()
+      };
       const submit = form.querySelector('[type="submit"]'); submit.disabled = true; submit.textContent = 'جارٍ الإرسال...';
       try {
-        if (FORM_WEBHOOK_URL) await fetch(FORM_WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data), mode:'no-cors' });
+        if (FORM_WEBHOOK_URL) await fetchWithTimeout(FORM_WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data), mode:'no-cors' });
         // عند تفعيل التحليلات: gtag('event', 'generate_lead', { ...data }); و fbq('track', 'Lead');
         document.getElementById('form-content').classList.add('form-hidden'); document.getElementById('form-success').classList.add('visible');
       } catch (error) { submit.disabled = false; submit.textContent = 'احجز الديمو'; alert('تعذر إرسال الطلب حاليًا. من فضلك حاول مرة أخرى.'); }
